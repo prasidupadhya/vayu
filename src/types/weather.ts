@@ -31,6 +31,7 @@ export type HourlyWeather = {
   weatherCode: number
   precipitationProbability: number
   visibility: number
+  isDay: boolean
 }
 
 export type DailyWeather = {

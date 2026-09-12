@@ -454,8 +454,11 @@ a:focus-visible {
   font-weight: 600;
 }
 
-.condition-row svg {
-  color: var(--accent);
+.condition-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  margin: -7px -3px -7px -6px;
 }
 
 .weather-summary {
@@ -492,9 +495,9 @@ a:focus-visible {
 
 .weather-orb__icon {
   position: relative;
-  width: 48%;
-  height: 48%;
-  color: #c8dcf6;
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
   filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.18));
 }
 
@@ -580,6 +583,12 @@ a:focus-visible {
 .metric-icon--plain {
   background: rgba(124, 183, 255, 0.08);
   color: var(--accent-blue);
+}
+
+.metric-icon img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
 }
 
 .metric-card > div:not(.metric-icon):not(.visibility-track) {
@@ -690,7 +699,9 @@ a:focus-visible {
 }
 
 .hour-icon {
-  color: #b9cde5;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
 }
 
 .rain-chance {
@@ -765,7 +776,9 @@ a:focus-visible {
 }
 
 .day-icon {
-  color: #b9cde5;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
 }
 
 .day-rain {
@@ -802,8 +815,11 @@ a:focus-visible {
   color: #d7e4f4;
 }
 
-.sun-stat svg {
-  color: #f4c36e;
+.sun-stat > img {
+  width: 34px;
+  height: 34px;
+  margin-left: -5px;
+  object-fit: contain;
 }
 
 .sun-stat span {

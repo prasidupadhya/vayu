@@ -45,6 +45,7 @@ type ForecastResponse = {
     weather_code: number[]
     precipitation_probability: number[]
     visibility: number[]
+    is_day: number[]
   }
   daily: {
     time: string[]
@@ -114,6 +115,7 @@ function mapHourly(response: ForecastResponse): HourlyWeather[] {
     weatherCode: response.hourly.weather_code[index],
     precipitationProbability: response.hourly.precipitation_probability[index],
     visibility: response.hourly.visibility[index],
+    isDay: response.hourly.is_day[index] === 1,
   }))
 }
 
@@ -177,6 +179,7 @@ export async function getWeather(
       'weather_code',
       'precipitation_probability',
       'visibility',
+      'is_day',
     ].join(','),
     daily: [
       'weather_code',

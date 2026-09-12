@@ -1,18 +1,13 @@
-import {
-  ArrowUp,
-  CloudSun,
-  Droplets,
-  Gauge,
-  LocateFixed,
-  MapPin,
-  Search,
-  Sunrise,
-  Sunset,
-  Thermometer,
-  Wind,
-} from 'lucide-react'
+import barometerIcon from '@meteocons/svg/fill/barometer.svg'
+import humidityIcon from '@meteocons/svg/fill/humidity.svg'
+import sunriseIcon from '@meteocons/svg/fill/sunrise.svg'
+import sunsetIcon from '@meteocons/svg/fill/sunset.svg'
+import thermometerIcon from '@meteocons/svg/fill/thermometer.svg'
+import windIcon from '@meteocons/svg/fill/wind.svg'
+import { ArrowUp, LocateFixed, MapPin, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import LocationSearch from './components/LocationSearch'
+import WeatherIcon from './components/WeatherIcon'
 import { getWeather, getWeatherCondition, makeDeviceLocation } from './lib/weather'
 import type { WeatherLocation, WeatherSnapshot } from './types/weather'
 
@@ -189,7 +184,12 @@ function App() {
                     </div>
 
                     <div className="condition-row">
-                      <CloudSun size={22} strokeWidth={1.6} />
+                      <WeatherIcon
+                        className="condition-icon"
+                        code={weather.current.weatherCode}
+                        decorative
+                        isDay={weather.current.isDay}
+                      />
                       <span>{condition.label}</span>
                     </div>
 
@@ -210,7 +210,14 @@ function App() {
 
               <div className="weather-orb" aria-hidden="true">
                 <div className="weather-orb__halo" />
-                <CloudSun className="weather-orb__icon" strokeWidth={1.2} />
+                {weather ? (
+                  <WeatherIcon
+                    className="weather-orb__icon"
+                    code={weather.current.weatherCode}
+                    decorative
+                    isDay={weather.current.isDay}
+                  />
+                ) : null}
               </div>
 
               {weather ? (
@@ -224,7 +231,7 @@ function App() {
             <section className="metric-grid" aria-label="Current conditions">
               <article className="metric-card">
                 <div className="metric-icon">
-                  <Thermometer size={19} />
+                  <img alt="" aria-hidden="true" src={thermometerIcon} />
                 </div>
                 <div>
                   <span className="metric-label">Feels like</span>
@@ -234,7 +241,7 @@ function App() {
 
               <article className="metric-card">
                 <div className="metric-icon">
-                  <Droplets size={19} />
+                  <img alt="" aria-hidden="true" src={humidityIcon} />
                 </div>
                 <div>
                   <span className="metric-label">Humidity</span>
@@ -244,7 +251,7 @@ function App() {
 
               <article className="metric-card">
                 <div className="metric-icon">
-                  <Wind size={19} />
+                  <img alt="" aria-hidden="true" src={windIcon} />
                 </div>
                 <div>
                   <span className="metric-label">Wind</span>
@@ -262,7 +269,7 @@ function App() {
 
               <article className="metric-card">
                 <div className="metric-icon">
-                  <Gauge size={19} />
+                  <img alt="" aria-hidden="true" src={barometerIcon} />
                 </div>
                 <div>
                   <span className="metric-label">Pressure</span>
@@ -298,7 +305,12 @@ function App() {
                   ? nextHours.map((entry, index) => (
                       <article className={`hour-card ${index === 0 ? 'hour-card--active' : ''}`} key={entry.time}>
                         <span className="hour-time">{index === 0 ? 'Now' : formatHour(entry.time)}</span>
-                        <CloudSun className="hour-icon" size={30} strokeWidth={1.4} />
+                        <WeatherIcon
+                          className="hour-icon"
+                          code={entry.weatherCode}
+                          decorative
+                          isDay={entry.isDay}
+                        />
                         <strong>{roundTemperature(entry.temperature)}°</strong>
                         <span className="rain-chance">{entry.precipitationProbability}%</span>
                       </article>
@@ -329,7 +341,7 @@ function App() {
                           <strong>{formatDay(day.date, index)}</strong>
                           <span>{dayCondition.shortLabel}</span>
                         </div>
-                        <CloudSun className="day-icon" size={30} strokeWidth={1.35} />
+                        <WeatherIcon className="day-icon" code={day.weatherCode} decorative />
                         <span className="day-rain">{day.precipitationProbability}%</span>
                         <div className="day-temp">
                           <strong>{roundTemperature(day.temperatureMax)}°</strong>
@@ -346,7 +358,7 @@ function App() {
             {today ? (
               <div className="sun-card">
                 <div className="sun-stat">
-                  <Sunrise size={20} />
+                  <img alt="" aria-hidden="true" src={sunriseIcon} />
                   <span>
                     <small>Sunrise</small>
                     <strong>{formatHour(today.sunrise)}</strong>
@@ -354,7 +366,7 @@ function App() {
                 </div>
                 <div className="sun-divider" />
                 <div className="sun-stat">
-                  <Sunset size={20} />
+                  <img alt="" aria-hidden="true" src={sunsetIcon} />
                   <span>
                     <small>Sunset</small>
                     <strong>{formatHour(today.sunset)}</strong>
