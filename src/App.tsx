@@ -21,6 +21,41 @@ const DEFAULT_LOCATION: WeatherLocation = {
   timezone: 'Europe/Madrid',
 }
 
+const LAST_LOCATION_KEY = 'vayu:last-location'
+
+function getInitialLocation(): WeatherLocation {
+  try {
+    const storedLocation = window.localStorage.getItem(LAST_LOCATION_KEY)
+    if (!storedLocation) {
+      return DEFAULT_LOCATION
+    }
+
+    const parsed = JSON.parse(storedLocation) as WeatherLocation
+    if (
+      typeof parsed.name !== 'string' ||
+      typeof parsed.latitude !== 'number' ||
+      typeof parsed.longitude !== 'number'
+    ) {
+      return DEFAULT_LOCATION
+    }
+
+    return parsed
+  } catch {
+    return DEFAULT_LOCATION
+  }
+}
+
+function getWeatherTone(code?: number) {
+  if (code === undefined) return 'neutral'
+  if (code === 0 || code === 1) return 'clear'
+  if (code === 2 || code === 3) return 'cloud'
+  if (code === 45 || code === 48) return 'fog'
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'rain'
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow'
+  if (code >= 95) return 'storm'
+  return 'neutral'
+}
+
 function roundTemperature(value: number) {
   return Math.round(value)
 }
@@ -47,7 +82,7 @@ function formatLocation(location: WeatherLocation) {
 
 function App() {
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null)
-  const [selectedLocation, setSelectedLocation] = useState<WeatherLocation>(DEFAULT_LOCATION)
+  const [selectedLocation, setSelectedLocation] = useState<WeatherLocation>(getInitialLocation)
   const [loading, setLoading] = useState(true)
   const [locating, setLocating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,6 +100,7 @@ function App() {
       const snapshot = await getWeather(location, controller.signal)
       setWeather(snapshot)
       setSelectedLocation(location)
+      window.localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(location))
     } catch (requestError) {
       if (requestError instanceof DOMException && requestError.name === 'AbortError') {
         return
@@ -79,7 +115,7 @@ function App() {
   }
 
   useEffect(() => {
-    void loadWeather(DEFAULT_LOCATION)
+    void loadWeather(selectedLocation)
 
     return () => {
       weatherRequestRef.current?.abort()
@@ -122,9 +158,10 @@ function App() {
   const currentVisibility = weather?.hourly[currentHourIndex]?.visibility ?? 0
   const today = weather?.daily[0]
   const pageTone = weather?.current.isDay ? 'day' : 'night'
+  const weatherTone = getWeatherTone(weather?.current.weatherCode)
 
   return (
-    <main className={`weather-app weather-app--${pageTone}`}>
+    <main className={`weather-app weather-app--${pageTone} weather-app--${weatherTone}`}>
       <div className="ambient ambient--one" />
       <div className="ambient ambient--two" />
 

@@ -1,5 +1,5 @@
 import { Crosshair, LoaderCircle, MapPin, Search, X } from 'lucide-react'
-import { FormEvent, useEffect, useRef, useState } from 'react'
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { searchLocations } from '../lib/weather'
 import type { WeatherLocation } from '../types/weather'
 
@@ -19,6 +19,7 @@ function LocationSearch({ onSelect, onUseLocation, locating }: LocationSearchPro
   const [searching, setSearching] = useState(false)
   const [open, setOpen] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
+  const [activeIndex, setActiveIndex] = useState(-1)
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -28,6 +29,7 @@ function LocationSearch({ onSelect, onUseLocation, locating }: LocationSearchPro
       setResults([])
       setSearching(false)
       setSearchError(null)
+      setActiveIndex(-1)
       return
     }
 
@@ -39,6 +41,7 @@ function LocationSearch({ onSelect, onUseLocation, locating }: LocationSearchPro
       try {
         const locations = await searchLocations(trimmedQuery, controller.signal)
         setResults(locations)
+        setActiveIndex(locations.length > 0 ? 0 : -1)
         setOpen(true)
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -76,14 +79,36 @@ function LocationSearch({ onSelect, onUseLocation, locating }: LocationSearchPro
     onSelect(location)
     setQuery('')
     setResults([])
+    setActiveIndex(-1)
     setOpen(false)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (results[0]) {
-      chooseLocation(results[0])
+    const selectedResult = results[activeIndex] ?? results[0]
+    if (selectedResult) {
+      chooseLocation(selectedResult)
+    }
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!open && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+      setOpen(true)
+    }
+
+    if (event.key === 'ArrowDown' && results.length > 0) {
+      event.preventDefault()
+      setActiveIndex((current) => (current + 1) % results.length)
+    }
+
+    if (event.key === 'ArrowUp' && results.length > 0) {
+      event.preventDefault()
+      setActiveIndex((current) => (current <= 0 ? results.length - 1 : current - 1))
+    }
+
+    if (event.key === 'Escape') {
+      setOpen(false)
     }
   }
 
@@ -92,11 +117,17 @@ function LocationSearch({ onSelect, onUseLocation, locating }: LocationSearchPro
       <form className="search-box" onSubmit={handleSubmit}>
         <Search className="search-box__icon" size={19} strokeWidth={1.8} />
         <input
+          aria-activedescendant={activeIndex >= 0 ? `location-option-${activeIndex}` : undefined}
+          aria-autocomplete="list"
+          aria-controls="location-results"
+          aria-expanded={open}
           aria-label="Search city or place"
           autoComplete="off"
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => query.trim().length >= 2 && setOpen(true)}
+          onKeyDown={handleKeyDown}
           placeholder="Search city or place"
+          role="combobox"
           spellCheck={false}
           type="search"
           value={query}
@@ -110,6 +141,7 @@ function LocationSearch({ onSelect, onUseLocation, locating }: LocationSearchPro
             onClick={() => {
               setQuery('')
               setResults([])
+              setActiveIndex(-1)
               setOpen(false)
             }}
             type="button"
@@ -125,15 +157,18 @@ function LocationSearch({ onSelect, onUseLocation, locating }: LocationSearchPro
       </button>
 
       {open ? (
-        <div className="search-results" role="listbox" aria-label="Location suggestions">
+        <div className="search-results" id="location-results" role="listbox" aria-label="Location suggestions">
           {searchError ? <p className="search-message">{searchError}</p> : null}
           {!searchError && !searching && results.length === 0 ? (
             <p className="search-message">No matching places found.</p>
           ) : null}
-          {results.map((location) => (
+          {results.map((location, index) => (
             <button
-              className="search-result"
+              aria-selected={activeIndex === index}
+              className={`search-result ${activeIndex === index ? 'is-active' : ''}`}
+              id={`location-option-${index}`}
               key={`${location.id ?? location.name}-${location.latitude}-${location.longitude}`}
+              onMouseEnter={() => setActiveIndex(index)}
               onClick={() => chooseLocation(location)}
               role="option"
               type="button"

@@ -79,6 +79,37 @@ a:focus-visible {
   --accent-deep: #65aef0;
 }
 
+.weather-app--clear .ambient--one {
+  background: #6aaeff;
+  opacity: 0.2;
+}
+
+.weather-app--clear .ambient--two {
+  background: #e8b75f;
+  opacity: 0.1;
+}
+
+.weather-app--rain .ambient--one,
+.weather-app--storm .ambient--one {
+  background: #557fba;
+  opacity: 0.2;
+}
+
+.weather-app--rain .ambient--two,
+.weather-app--storm .ambient--two {
+  background: #4e718d;
+  opacity: 0.11;
+}
+
+.weather-app--snow .ambient--one {
+  background: #a8c9ee;
+  opacity: 0.18;
+}
+
+.weather-app--fog .ambient {
+  opacity: 0.08;
+}
+
 .ambient {
   position: fixed;
   z-index: 0;
@@ -320,6 +351,10 @@ a:focus-visible {
 
 .search-result:hover {
   background: rgba(255, 255, 255, 0.045);
+}
+
+.search-result.is-active {
+  background: rgba(157, 238, 220, 0.065);
 }
 
 .search-result__icon {
