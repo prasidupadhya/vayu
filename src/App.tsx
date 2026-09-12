@@ -8,7 +8,13 @@ import { ArrowUp, LocateFixed, MapPin, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import LocationSearch from './components/LocationSearch'
 import WeatherIcon from './components/WeatherIcon'
-import { getWeather, getWeatherCondition, makeDeviceLocation } from './lib/weather'
+import {
+  formatLocationDate,
+  formatLocationTime,
+  getLocalIsoMinute,
+  getSolarPhase,
+} from './lib/solar'
+import { getWeather, getWeatherCondition, resolveDeviceLocation } from './lib/weather'
 import type { WeatherLocation, WeatherSnapshot } from './types/weather'
 
 const DEFAULT_LOCATION: WeatherLocation = {
@@ -86,7 +92,9 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [locating, setLocating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [clockNow, setClockNow] = useState(() => new Date())
   const weatherRequestRef = useRef<AbortController | null>(null)
+  const locationRequestRef = useRef<AbortController | null>(null)
 
   const loadWeather = async (location: WeatherLocation) => {
     weatherRequestRef.current?.abort()
@@ -99,8 +107,8 @@ function App() {
     try {
       const snapshot = await getWeather(location, controller.signal)
       setWeather(snapshot)
-      setSelectedLocation(location)
-      window.localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(location))
+      setSelectedLocation(snapshot.location)
+      window.localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(snapshot.location))
     } catch (requestError) {
       if (requestError instanceof DOMException && requestError.name === 'AbortError') {
         return
@@ -119,7 +127,13 @@ function App() {
 
     return () => {
       weatherRequestRef.current?.abort()
+      locationRequestRef.current?.abort()
     }
+  }, [])
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setClockNow(new Date()), 1000)
+    return () => window.clearInterval(interval)
   }, [])
 
   const useDeviceLocation = () => {
@@ -133,8 +147,23 @@ function App() {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const location = makeDeviceLocation(position.coords.latitude, position.coords.longitude)
-        void loadWeather(location).finally(() => setLocating(false))
+        locationRequestRef.current?.abort()
+        const controller = new AbortController()
+        locationRequestRef.current = controller
+
+        void resolveDeviceLocation(
+          position.coords.latitude,
+          position.coords.longitude,
+          controller.signal,
+        )
+          .then((location) => loadWeather(location))
+          .catch((locationError) => {
+            if (locationError instanceof DOMException && locationError.name === 'AbortError') {
+              return
+            }
+            setError(locationError instanceof Error ? locationError.message : 'Unable to resolve this location.')
+          })
+          .finally(() => setLocating(false))
       },
       (locationError) => {
         setLocating(false)
@@ -145,37 +174,41 @@ function App() {
   }
 
   const condition = weather ? getWeatherCondition(weather.current.weatherCode) : null
+  const activeTimezone = weather?.timezone ?? selectedLocation.timezone ?? DEFAULT_LOCATION.timezone ?? 'UTC'
+  const solarPhase = useMemo(
+    () => getSolarPhase(clockNow, activeTimezone, weather?.daily ?? []),
+    [activeTimezone, clockNow, weather?.daily],
+  )
+  const localClock = formatLocationTime(clockNow, activeTimezone)
+  const localDate = formatLocationDate(clockNow, activeTimezone)
+  const localIsoMinute = getLocalIsoMinute(clockNow, activeTimezone)
   const currentHourIndex = useMemo(() => {
     if (!weather) {
       return 0
     }
 
-    const exactIndex = weather.hourly.findIndex((entry) => entry.time >= weather.current.time)
+    const exactIndex = weather.hourly.findIndex((entry) => entry.time >= localIsoMinute)
     return exactIndex >= 0 ? exactIndex : 0
-  }, [weather])
+  }, [localIsoMinute, weather])
 
   const nextHours = weather?.hourly.slice(currentHourIndex, currentHourIndex + 8) ?? []
   const currentVisibility = weather?.hourly[currentHourIndex]?.visibility ?? 0
   const today = weather?.daily[0]
-  const pageTone = weather?.current.isDay ? 'day' : 'night'
   const weatherTone = getWeatherTone(weather?.current.weatherCode)
 
   return (
-    <main className={`weather-app weather-app--${pageTone} weather-app--${weatherTone}`}>
+    <main className={`weather-app weather-app--phase-${solarPhase.id} weather-app--${weatherTone}`}>
       <div className="ambient ambient--one" />
       <div className="ambient ambient--two" />
 
       <div className="app-frame">
         <header className="topbar">
-          <a className="brand" href="#top" aria-label="Vayu home">
-            <span className="brand-symbol" aria-hidden="true">
-              V
+          <div className="local-clock" aria-live="off">
+            <strong className="local-clock__time">{localClock}</strong>
+            <span className="local-clock__meta">
+              {localDate} · {solarPhase.label}
             </span>
-            <span>
-              <strong>Vayu</strong>
-              <small>Weather, clearly</small>
-            </span>
-          </a>
+          </div>
 
           <div className="topbar-location" aria-live="polite">
             <MapPin size={16} strokeWidth={1.8} />
@@ -225,7 +258,7 @@ function App() {
                         className="condition-icon"
                         code={weather.current.weatherCode}
                         decorative
-                        isDay={weather.current.isDay}
+                        isDay={solarPhase.isDaylight}
                       />
                       <span>{condition.label}</span>
                     </div>
@@ -252,7 +285,7 @@ function App() {
                     className="weather-orb__icon"
                     code={weather.current.weatherCode}
                     decorative
-                    isDay={weather.current.isDay}
+                    isDay={solarPhase.isDaylight}
                   />
                 ) : null}
               </div>

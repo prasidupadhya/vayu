@@ -8,6 +8,7 @@ import type {
 
 const FORECAST_API = 'https://api.open-meteo.com/v1/forecast'
 const GEOCODING_API = 'https://geocoding-api.open-meteo.com/v1/search'
+const REVERSE_GEOCODING_API = 'https://api.bigdatacloud.net/data/reverse-geocode-client'
 
 type GeocodingResult = {
   id: number
@@ -22,6 +23,14 @@ type GeocodingResult = {
 
 type GeocodingResponse = {
   results?: GeocodingResult[]
+}
+
+type ReverseGeocodingResponse = {
+  city?: string
+  locality?: string
+  principalSubdivision?: string
+  countryName?: string
+  countryCode?: string
 }
 
 type ForecastResponse = {
@@ -198,8 +207,13 @@ export async function getWeather(
 
   const data = (await response.json()) as ForecastResponse
 
+  const resolvedLocation = {
+    ...location,
+    timezone: data.timezone,
+  }
+
   return {
-    location,
+    location: resolvedLocation,
     timezone: data.timezone,
     timezoneAbbreviation: data.timezone_abbreviation,
     current: {
@@ -219,10 +233,34 @@ export async function getWeather(
   }
 }
 
-export function makeDeviceLocation(latitude: number, longitude: number): WeatherLocation {
+export async function resolveDeviceLocation(
+  latitude: number,
+  longitude: number,
+  signal?: AbortSignal,
+): Promise<WeatherLocation> {
+  const params = new URLSearchParams({
+    latitude: String(latitude),
+    longitude: String(longitude),
+    localityLanguage: 'en',
+  })
+
+  const response = await fetch(`${REVERSE_GEOCODING_API}?${params.toString()}`, { signal })
+  assertOk(response, 'Unable to determine the name of this location.')
+
+  const data = (await response.json()) as ReverseGeocodingResponse
+  const name = data.city || data.locality || data.principalSubdivision || data.countryName
+  const admin1 = data.principalSubdivision?.replace(/\s*\[[^\]]+\]\s*$/, '')
+
+  if (!name) {
+    throw new Error('Unable to determine the name of this location.')
+  }
+
   return {
-    name: 'Current location',
+    name,
     latitude,
     longitude,
+    country: data.countryName,
+    countryCode: data.countryCode,
+    admin1,
   }
 }
