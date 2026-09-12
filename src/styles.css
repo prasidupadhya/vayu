@@ -83,7 +83,7 @@ a:focus-visible {
     background 650ms ease;
 }
 
-.weather-app--phase-sunrise {
+.weather-app--period-morning {
   --page-bg: #fff0dc;
   --panel: rgba(255, 250, 243, 0.88);
   --panel-strong: rgba(255, 251, 246, 0.97);
@@ -109,33 +109,7 @@ a:focus-visible {
   --panel-shadow: rgba(120, 76, 36, 0.12);
 }
 
-.weather-app--phase-day {
-  --page-bg: #e9f6ff;
-  --panel: rgba(255, 255, 255, 0.84);
-  --panel-strong: rgba(255, 255, 255, 0.97);
-  --panel-soft: rgba(40, 91, 138, 0.055);
-  --surface: rgba(255, 255, 255, 0.78);
-  --surface-strong: rgba(255, 255, 255, 0.98);
-  --surface-hover: rgba(29, 84, 133, 0.06);
-  --hero-start: rgba(255, 255, 255, 0.97);
-  --hero-end: rgba(221, 241, 255, 0.94);
-  --line: rgba(25, 60, 92, 0.11);
-  --line-strong: rgba(25, 60, 92, 0.18);
-  --text: #12283e;
-  --muted: #62778c;
-  --subtle: #8798a9;
-  --card-text: #183149;
-  --condition-text: #24435f;
-  --temperature-unit: #5b748c;
-  --sun-text: #28445e;
-  --placeholder: #8292a2;
-  --accent: #148d79;
-  --accent-deep: #0d725f;
-  --accent-blue: #2d7fc5;
-  --panel-shadow: rgba(42, 84, 122, 0.12);
-}
-
-.weather-app--phase-afternoon {
+.weather-app--period-afternoon {
   --page-bg: #eef5ff;
   --panel: rgba(255, 255, 255, 0.84);
   --panel-strong: rgba(255, 255, 255, 0.97);
@@ -161,7 +135,7 @@ a:focus-visible {
   --panel-shadow: rgba(43, 65, 102, 0.12);
 }
 
-.weather-app--phase-evening {
+.weather-app--period-evening {
   --page-bg: #f7eee8;
   --panel: rgba(255, 250, 247, 0.86);
   --panel-strong: rgba(255, 251, 249, 0.97);
@@ -187,32 +161,7 @@ a:focus-visible {
   --panel-shadow: rgba(83, 55, 68, 0.12);
 }
 
-.weather-app--phase-sunset {
-  --page-bg: #2d2637;
-  --panel: rgba(45, 36, 56, 0.86);
-  --panel-strong: rgba(49, 39, 61, 0.97);
-  --surface: rgba(53, 43, 66, 0.78);
-  --surface-strong: rgba(45, 36, 58, 0.98);
-  --surface-hover: rgba(255, 255, 255, 0.06);
-  --hero-start: rgba(73, 53, 76, 0.97);
-  --hero-end: rgba(39, 33, 54, 0.95);
-  --line: rgba(255, 235, 224, 0.1);
-  --line-strong: rgba(255, 235, 224, 0.17);
-  --text: #fff6f1;
-  --muted: #c9b7c2;
-  --subtle: #988797;
-  --card-text: #fff5ef;
-  --condition-text: #f6e5e6;
-  --temperature-unit: #dec9d2;
-  --sun-text: #f5e4e3;
-  --placeholder: #a896a4;
-  --accent: #f0a780;
-  --accent-deep: #da8666;
-  --accent-blue: #9ba9e8;
-  --panel-shadow: rgba(17, 12, 25, 0.22);
-}
-
-.weather-app--phase-night {
+.weather-app--period-night {
   --page-bg: #060c16;
   --accent: #a8d7ff;
   --accent-deep: #65aef0;

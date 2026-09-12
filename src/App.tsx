@@ -11,9 +11,10 @@ import WeatherIcon from './components/WeatherIcon'
 import {
   formatLocationDate,
   formatLocationTime,
+  getDayPeriod,
+  getDayPeriodFromLocalIso,
   getLocalIsoMinute,
-  getSolarPhase,
-} from './lib/solar'
+} from './lib/dayPeriod'
 import { getWeather, getWeatherCondition, resolveDeviceLocation } from './lib/weather'
 import type { WeatherLocation, WeatherSnapshot } from './types/weather'
 
@@ -175,9 +176,9 @@ function App() {
 
   const condition = weather ? getWeatherCondition(weather.current.weatherCode) : null
   const activeTimezone = weather?.timezone ?? selectedLocation.timezone ?? DEFAULT_LOCATION.timezone ?? 'UTC'
-  const solarPhase = useMemo(
-    () => getSolarPhase(clockNow, activeTimezone, weather?.daily ?? []),
-    [activeTimezone, clockNow, weather?.daily],
+  const dayPeriod = useMemo(
+    () => getDayPeriod(clockNow, activeTimezone),
+    [activeTimezone, clockNow],
   )
   const localClock = formatLocationTime(clockNow, activeTimezone)
   const localDate = formatLocationDate(clockNow, activeTimezone)
@@ -197,7 +198,7 @@ function App() {
   const weatherTone = getWeatherTone(weather?.current.weatherCode)
 
   return (
-    <main className={`weather-app weather-app--phase-${solarPhase.id} weather-app--${weatherTone}`}>
+    <main className={`weather-app weather-app--period-${dayPeriod.id} weather-app--${weatherTone}`}>
       <div className="ambient ambient--one" />
       <div className="ambient ambient--two" />
 
@@ -206,7 +207,7 @@ function App() {
           <div className="local-clock" aria-live="off">
             <strong className="local-clock__time">{localClock}</strong>
             <span className="local-clock__meta">
-              {localDate} · {solarPhase.label}
+              {localDate} · {dayPeriod.label}
             </span>
           </div>
 
@@ -258,7 +259,7 @@ function App() {
                         className="condition-icon"
                         code={weather.current.weatherCode}
                         decorative
-                        isDay={solarPhase.isDaylight}
+                        isDay={dayPeriod.isDaylight}
                       />
                       <span>{condition.label}</span>
                     </div>
@@ -285,7 +286,7 @@ function App() {
                     className="weather-orb__icon"
                     code={weather.current.weatherCode}
                     decorative
-                    isDay={solarPhase.isDaylight}
+                    isDay={dayPeriod.isDaylight}
                   />
                 ) : null}
               </div>
@@ -379,7 +380,7 @@ function App() {
                           className="hour-icon"
                           code={entry.weatherCode}
                           decorative
-                          isDay={entry.isDay}
+                          isDay={getDayPeriodFromLocalIso(entry.time).isDaylight}
                         />
                         <strong>{roundTemperature(entry.temperature)}°</strong>
                         <span className="rain-chance">{entry.precipitationProbability}%</span>
