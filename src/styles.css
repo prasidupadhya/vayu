@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700&display=swap');
+
+:root {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: #eaf2ff;
+  background: #08111f;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: #08111f;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(65, 135, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 85% 85%, rgba(73, 217, 181, 0.12), transparent 30%),
+    #08111f;
+}
+
+.intro-card {
+  width: min(680px, 100%);
+  padding: clamp(32px, 7vw, 72px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 32px;
+  background: rgba(10, 24, 43, 0.78);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.35);
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 48px;
+  border-radius: 14px;
+  background: #eaf2ff;
+  color: #08111f;
+  font: 700 20px/1 'Manrope', sans-serif;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: #93a9c7;
+  font-size: 0.9rem;
+}
+
+h1 {
+  margin: 0;
+  font: 600 clamp(2.8rem, 9vw, 5.6rem) / 0.96 'Manrope', sans-serif;
+  letter-spacing: -0.06em;
+}
+
+.intro-copy {
+  max-width: 470px;
+  margin: 26px 0 0;
+  color: #aabbd2;
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  line-height: 1.7;
+}
